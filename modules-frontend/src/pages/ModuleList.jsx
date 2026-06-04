@@ -71,7 +71,7 @@ export default function ModuleList() {
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
     
-    {/* REMOVED: Dark simulation mock profile banner wrapper row */}
+    
 
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
       <div>

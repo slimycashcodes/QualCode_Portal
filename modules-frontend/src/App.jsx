@@ -7,7 +7,6 @@ import LoginView from './pages/Login';
 import ModuleList from './pages/ModuleList';
 import ModuleForm from './pages/ModuleForm';
 
-// Defensive component rendering check to guard authorization pathways
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/login" replace />;

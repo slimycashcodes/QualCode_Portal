@@ -61,12 +61,65 @@ export default function LoginView() {
           <p>• User Access: <strong>user</strong> / <strong>user123</strong></p>
         </div>
       </div>
-      <div style={{ flexGrow: 1, background: '#161616', display: 'flex', alignItems: 'center', padding: '4rem' }}>
-        <div style={{ maxWidth: '480px', color: '#fff' }}>
-          <h2 style={{ fontWeight: 300, color: '#a8c0ff', marginBottom: '1rem' }}>Clinical Data Integrity Guardian</h2>
-          <p style={{ color: '#c6c6c6', lineHeight: '1.6' }}>Role-based network access ensures secure provisioning, evaluation logging, and publication lifecycles of mental health toolkits.</p>
-        </div>
-      </div>
+      <div
+  style={{
+    flexGrow: 1,
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '4rem',
+    overflow: 'hidden',
+    minHeight: '500px'
+  }}
+>
+  {/* Background Image */}
+  <img
+    src="https://wallpaperaccess.com/full/4472324.jpg"
+    alt=""
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      opacity : 0.9, // adjust opacity here
+      zIndex: 0
+    }}
+  />
+
+  {/* Content */}
+  <div
+    style={{
+      maxWidth: '480px',
+      color: '#161616',
+      position: 'relative',
+      zIndex: 1
+    }}
+  >
+    <h1
+      style={{
+        fontWeight: 400,
+        color: '#ecececff',
+        marginBottom: '1rem',
+        fontFamily : 'fantasy'
+      }}
+    >
+      Clinical Data Integrity Guardian
+    </h1>
+
+    <p
+      style={{
+        color: '#000000ff',
+        fontWeight: 400
+      }}
+    >
+      Role-based network access ensures secure provisioning,
+      evaluation logging, and publication lifecycles of mental
+      health toolkits.
+    </p>
+  </div>
+</div>
     </div>
   );
 }

@@ -2,9 +2,11 @@ import React from 'react';
 import { Button } from '@carbon/react';
 import { ArrowRight } from '@carbon/icons-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function Welcome() {
   const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <div style={{
@@ -30,13 +32,13 @@ export default function Welcome() {
         <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <span style={{ background: '#ffffff', color: '#161616', padding: '0.4rem 1rem', borderRadius: '20px', fontWeight: 500, fontSize: '0.9rem', cursor: 'pointer' }}>Home</span>
           {['About', 'Our Programs', 'Become a Volunteer', 'Contact'].map(item => (
-            <span key={item} style={{ fontSize: '0.9rem', color: '#e0e0e0', cursor: 'pointer', fontWeight: 400 }}>{item}</span>
+            <span key={item} style={{ fontSize: '0.9rem', cursor: 'pointer', fontWeight: 400 }}>{item}</span>
           ))}
           <Button 
             size="sm" 
             kind="primary" 
             onClick={() => navigate('/login')}
-            style={{ borderRadius: '20px', padding: '0 1.5rem', background: '#0f62fe' }}
+            style={{ borderRadius: '20px', padding: '0 1.5rem', background: '#703beaff', alignItems : 'center' , color : 'black'}}
           >
             Portal Login
           </Button>
@@ -56,17 +58,24 @@ export default function Welcome() {
             Stronger Minds,<br />Brighter Careers.
           </h1>
           
-          <Button 
-            renderIcon={() => <ArrowRight size={16} />} 
-            onClick={() => navigate('/login')}
-            style={{
-              background: '#ffffff', color: '#161616', fontWeight: 500,
-              borderRadius: '30px', padding: '0.8rem 2rem', height: 'auto',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-            }}
-          >
-            Try the Zen Pilot Program
-          </Button>
+          <Button
+  renderIcon={() => <ArrowRight size={16} />}
+  onClick={() => navigate('/login')}
+  onMouseEnter={() => setIsHovered(true)}
+  onMouseLeave={() => setIsHovered(false)}
+  style={{
+    background: isHovered ? '#6f3dcb' : '#ffffff',
+    color: isHovered ? '#ffffff' : '#161616',
+    fontWeight: 500,
+    borderRadius: '30px',
+    padding: '0.8rem 2rem',
+    height: 'auto',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    transition: 'all 0.3s ease'
+  }}
+>
+  Try the Zen Pilot Program
+</Button>
         </div>
 
         {/* Right Decorative Graphic Graphic Focal Point */}
@@ -94,31 +103,31 @@ export default function Welcome() {
       {/* Bottom Product Tab Footers (Glassmorphism layout matching design reference image_a3c2c2.png) */}
       <footer style={{
         padding: '0 4rem 3rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-        gap: '1.5rem', zIndex: 5
+        gap: '1.5rem', zIndex: 5 
       }}>
         <div style={{
           background: '#ffffff', color: '#161616', padding: '1.5rem',
           borderRadius: '16px', backdropFilter: 'blur(10px)', boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
         }}>
           <span style={{ fontSize: '0.75rem', fontWeight: 600, tracking: '0.05em', textTransform: 'uppercase', color: '#0f62fe' }}>Program Hub</span>
-          <h5 style={{ fontWeight: 600, marginTop: '0.25rem' }}>MIND MATTERS™</h5>
+          <h5 style={{ fontWeight: 600, marginTop: '0.25rem', cursor : 'pointer'}} onClick={() => window.open('https://zenbyqualcode.com/mind-matters/', '_blank')}>MIND MATTERS™</h5>
+        </div>
+        <div style={{
+          background: '#ffffff', color: '#161616', padding: '1.5rem',
+          borderRadius: '16px', backdropFilter: 'blur(10px)', boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+        }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, tracking: '0.05em', textTransform: 'uppercase', color: '#0f62fe' }}>Program Hub</span>
+          <h5 style={{ fontWeight: 600, marginTop: '0.25rem', cursor : 'pointer' }} onClick={() => window.open('https://zenbyqualcode.com/work-well/', '_blank')}>WORKWELL™</h5>
+        </div>
+        <div style={{
+          background: '#ffffff', color: '#161616', padding: '1.5rem',
+          borderRadius: '16px', backdropFilter: 'blur(10px)', boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+        }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, tracking: '0.05em', textTransform: 'uppercase', color: '#0f62fe' }}>Program Hub</span>
+          <h5 style={{ fontWeight: 600, marginTop: '0.25rem', cursor : 'pointer' }} onClick={() => window.open('https://zenbyqualcode.com/self-talk/', '_blank') }>SELF TALK™</h5>
         </div>
 
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff', padding: '1.5rem',
-          borderRadius: '16px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <span style={{ fontSize: '0.75rem', opacity: 0.7, textTransform: 'uppercase' }}>Enterprise Sync</span>
-          <h5 style={{ fontWeight: 500, marginTop: '0.25rem' }}>WORKWELL™</h5>
-        </div>
-
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff', padding: '1.5rem',
-          borderRadius: '16px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <span style={{ fontSize: '0.75rem', opacity: 0.7, textTransform: 'uppercase' }}>Clinical Network</span>
-          <h5 style={{ fontWeight: 500, marginTop: '0.25rem' }}>SELF TALK™</h5>
-        </div>
+        
       </footer>
     </div>
   );
