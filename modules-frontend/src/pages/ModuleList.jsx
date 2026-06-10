@@ -33,15 +33,56 @@ import {
 export default function ModuleList() {
   const navigate = useNavigate();
 
-  // 1. Core State Handlers
-  const [modules, setModules] = useState([]);
+  // 1. Core State Handlers - Initialized with the 3 Figma sample records by default
+  const [modules, setModules] = useState([
+    {
+      id: "sample-1",
+      name: "Child Wellbeing",
+      author: "Saranya Loganathan",
+      program: "Mind Matters",
+      status: "Active",
+      date: "22 Nov 2025",
+      serviceComponent: "Workshop",
+      category: "CBSE",
+      targetGroup: "12th Grade",
+      summary: 'This session, designed for college students facing transitions, focuses on understanding and embracing change psychologically and emotionally. Learners engage in interactive activities like "Switch Sides!" and "The Unfold Game" to explore fears, strengths, and opportunities in change.',
+      generatedSummary: "Supports emotional, social, and psychological wellbeing in children. Focuses on healthy growth and positive development."
+    },
+    {
+      id: "sample-2",
+      name: "Anti Bullying Methods",
+      author: "Saranya Loganathan",
+      program: "Mind Matters Jr.",
+      status: "Draft",
+      date: "19 Nov 2025",
+      serviceComponent: "Workshop",
+      category: "CBSE",
+      targetGroup: "12th Grade",
+      summary: "Focuses on identifying bullying behavior early and implementing corrective social methodologies among school students.",
+      generatedSummary: "Uses interactive frameworks to eliminate schoolyard bullying and promote student collaboration."
+    },
+    {
+      id: "sample-3",
+      name: "Handing Depression in Minors",
+      author: "Janice Anthony",
+      program: "Mind Matters Jr.",
+      status: "Draft",
+      date: "23 Nov 2025",
+      serviceComponent: "Workshop",
+      category: "CBSE",
+      targetGroup: "12th Grade",
+      summary: "An introduction to identifying early clinical symptoms of mood changes and withdrawal patterns in early development.",
+      generatedSummary: "Encourages constructive peer support channels and early baseline therapy tracking models."
+    }
+  ]);
+  
   const [filteredModules, setFilteredModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
   // 2. Structural Interaction Layout States
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState(0); // 0 = All Modules, 1 = My Modules
+  const [activeTab, setActiveTab] = useState(0); 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProgram, setSelectedProgram] = useState('All Programs');
 
@@ -51,12 +92,11 @@ export default function ModuleList() {
 
   // 4. API Data Fetch Pipeline with Automated Dynamic Array Unpacker
   const fetchModules = async () => {
-    setLoading(true);
     setError(null);
     try {
       const response = await axios.get('http://localhost:8080/api/modules', {
         headers: { 
-          'X-Authenticated-Role': 'USER' // Clears your custom backend interceptor gate
+          'X-Authenticated-Role': 'USER' 
         }
       });
       
@@ -67,30 +107,26 @@ export default function ModuleList() {
         rawData = rawData.content || rawData.modules || rawData.data || [rawData];
       }
 
-      const safeArray = Array.isArray(rawData) ? rawData : [];
-      
-      // Normalize data fields instantly to guarantee structural property mapping safety
-      const normalizedData = safeArray.map((item, idx) => ({
-        id: item?.id || item?._id || idx.toString() || Math.random().toString(),
-        name: item?.name || item?.moduleName || 'Untitled Module',
-        author: item?.author || (item?.collaborators && item?.collaborators[0]) || 'Saranya Loganathan', 
-        program: item?.program || item?.programName || 'Mind Matters Jr.',
-        status: item?.status || 'Active',
-        date: item?.date || item?.publishDate || '22 Nov 2025',
-        serviceComponent: item?.serviceComponent || 'Workshop',
-        category: item?.category || 'CBSE',
-        targetGroup: item?.targetGroup || '12th Grade',
-        summary: item?.summary || 'This session, designed for college students facing transitions, focuses on understanding and embracing change psychologically and emotionally. Learners engage in interactive activities like "Switch Sides!" and "The Unfold Game" to explore fears, strengths, and opportunities in change.',
-        generatedSummary: item?.generatedSummary || 'Supports emotional, social, and psychological wellbeing in children. Focuses on healthy growth and positive development.'
-      }));
-
-      setModules(normalizedData);
-      setFilteredModules(normalizedData);
+      if (Array.isArray(rawData) && rawData.length > 0) {
+        // If live DB data is present, map it cleanly and overwrite the static layout list
+        const normalizedData = rawData.map((item, idx) => ({
+          id: item?.id || item?._id || idx.toString(),
+          name: item?.name || item?.moduleName || 'Untitled Module',
+          author: item?.author || (item?.collaborators && item?.collaborators[0]) || 'Saranya Loganathan', 
+          program: item?.program || item?.programName || 'Mind Matters Jr.',
+          status: item?.status || 'Active',
+          date: item?.date || item?.publishDate || '22 Nov 2025',
+          serviceComponent: item?.serviceComponent || 'Workshop',
+          category: item?.category || 'CBSE',
+          targetGroup: item?.targetGroup || '12th Grade',
+          summary: item?.summary || 'This session, designed for college students facing transitions, focuses on understanding and embracing change psychologically and emotionally.',
+          generatedSummary: item?.generatedSummary || 'Supports emotional, social, and psychological wellbeing.'
+        }));
+        setModules(normalizedData);
+      }
     } catch (err) {
-      console.error("API Fetch Error: ", err);
-      setError("Could not load database records. Ensure Spring Boot is running on port 8080.");
-      setModules([]);
-      setFilteredModules([]);
+      console.warn("Backend connection unavailable. Maintaining frontend workspace sample fallback dataset.", err);
+      // We don't block the UI with a red error screen anymore; we just log it and leave samples active.
     } finally {
       setLoading(false);
     }
@@ -127,26 +163,12 @@ export default function ModuleList() {
   }, [searchTerm, selectedProgram, activeTab, modules]);
 
   // 6. Router Navigation Event Handlers
-  const handleCreateClick = () => {
-    navigate('/create');
-  };
-
-  const handleReviewQueueClick = () => {
-    navigate('/review-queue');
-  };
-
-  const handleRowClick = (row) => {
-    navigate(`/edit/${row.id}`);
-  };
-
-  const toggleRowExpand = (id) => {
-    setExpandedRowId(expandedRowId === id ? null : id);
-  };
-
-  const openInspectionDrawer = (row) => {
-    setSelectedDrawerModule(row);
-  };
-
+  const handleCreateClick = () => navigate('/create');
+  const handleReviewQueueClick = () => navigate('/review-queue');
+  const handleRowClick = (row) => navigate(`/edit/${row.id}`);
+  const toggleRowExpand = (id) => setExpandedRowId(expandedRowId === id ? null : id);
+  const openInspectionDrawer = (row) => setSelectedDrawerModule(row);
+  
   const handleResetFilters = () => {
     setSearchTerm('');
     setSelectedProgram('All Programs');
@@ -156,9 +178,6 @@ export default function ModuleList() {
   // Metrics Metric State Counters Computations
   const liveCount = filteredModules.filter(m => m.status.toLowerCase() === 'active' || m.status.toLowerCase() === 'approved').length;
   const draftCount = filteredModules.filter(m => m.status.toLowerCase() === 'draft' || m.status.toLowerCase() === 'pending_review').length;
-
-  if (loading) return <div style={{ padding: '3rem', fontFamily: '"IBM Plex Sans", sans-serif' }}>Loading module workspace environment...</div>;
-  if (error) return <div style={{ padding: '3rem', color: '#da1e28', fontFamily: '"IBM Plex Sans", sans-serif' }}><strong>System Error:</strong> {error}</div>;
 
   return (
     <div style={{ background: '#fff', minHeight: '100vh', paddingTop: '3rem', fontFamily: '"IBM Plex Sans", sans-serif', position: 'relative', overflowX: 'hidden' }}>
@@ -214,19 +233,10 @@ export default function ModuleList() {
             <h1 style={{ fontSize: '2.5rem', fontWeight: 400, color: '#161616', margin: 0 }}>Modules</h1>
           </div>
           <div className="cds--col-sm-4 cds--col-md-4 cds--col-lg-8" style={{ display: 'flex', justifyContent: 'flex-end', gap: '1px' }}>
-            <Button 
-              kind="secondary" 
-              onClick={handleReviewQueueClick}
-              style={{ backgroundColor: '#393939', color: '#fff', width: '160px', border: 'none' }}
-            >
+            <Button kind="secondary" onClick={handleReviewQueueClick} style={{ backgroundColor: '#393939', color: '#fff', width: '160px', border: 'none' }}>
               Review Queue
             </Button>
-            <Button 
-              kind="primary" 
-              renderIcon={Add} 
-              onClick={handleCreateClick}
-              style={{ width: '160px' }}
-            >
+            <Button kind="primary" renderIcon={Add} onClick={handleCreateClick} style={{ width: '160px' }}>
               Create Modules
             </Button>
           </div>
@@ -236,26 +246,10 @@ export default function ModuleList() {
         <div className="cds--row" style={{ marginBottom: '1.5rem' }}>
           <div className="cds--col">
             <div style={{ display: 'flex', borderBottom: '1px solid #e0e0e0' }}>
-              <button 
-                onClick={() => setActiveTab(0)}
-                style={{
-                  padding: '0.75rem 1.5rem', border: 'none',
-                  background: activeTab === 0 ? '#161616' : 'transparent',
-                  color: activeTab === 0 ? '#fff' : '#525252',
-                  cursor: 'pointer', fontWeight: 500
-                }}
-              >
+              <button onClick={() => setActiveTab(0)} style={{ padding: '0.75rem 1.5rem', border: 'none', background: activeTab === 0 ? '#161616' : 'transparent', color: activeTab === 0 ? '#fff' : '#525252', cursor: 'pointer', fontWeight: 500 }}>
                 All Modules
               </button>
-              <button 
-                onClick={() => setActiveTab(1)}
-                style={{
-                  padding: '0.75rem 1.5rem', border: '1px solid #e0e0e0', borderBottom: 'none',
-                  background: activeTab === 1 ? '#161616' : '#fff',
-                  color: activeTab === 1 ? '#fff' : '#161616',
-                  cursor: 'pointer', fontWeight: 500
-                }}
-              >
+              <button onClick={() => setActiveTab(1)} style={{ padding: '0.75rem 1.5rem', border: '1px solid #e0e0e0', borderBottom: 'none', background: activeTab === 1 ? '#161616' : '#fff', color: activeTab === 1 ? '#fff' : '#161616', cursor: 'pointer', fontWeight: 500 }}>
                 My Modules
               </button>
             </div>
@@ -279,7 +273,6 @@ export default function ModuleList() {
                 <span style={{ fontWeight: 600, color: '#161616', fontSize: '1rem' }}>Filter</span>
                 <Close size={16} style={{ cursor: 'pointer', color: '#525252' }} onClick={() => setIsFilterPanelOpen(false)} />
               </div>
-
               <div style={{ flexGrow: 1, overflowY: 'auto' }}>
                 <Accordion align="end" style={{ width: '100%' }}>
                   <AccordionItem title="Collaborators" style={{ borderBottom: '1px solid #e0e0e0', fontSize: '0.875rem' }}><div style={{ padding: '0.5rem 1rem', color: '#161616' }}>Saranya Loganathan</div></AccordionItem>
@@ -288,13 +281,8 @@ export default function ModuleList() {
                   <AccordionItem title="Tags" style={{ borderBottom: '1px solid #e0e0e0', fontSize: '0.875rem' }}><div style={{ padding: '0.5rem 1rem', color: '#525252' }}>Psychology</div></AccordionItem>
                 </Accordion>
               </div>
-
-              <div 
-                onClick={handleResetFilters}
-                style={{ padding: '1rem', borderTop: '1px solid #e0e0e0', background: '#f4f4f4', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#525252' }}
-              >
-                <span>Reset filters</span>
-                <Renew size={16} />
+              <div onClick={handleResetFilters} style={{ padding: '1rem', borderTop: '1px solid #e0e0e0', background: '#f4f4f4', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', fontSize: '0.875rem', color: '#525252' }}>
+                <span>Reset filters</span><Renew size={16} />
               </div>
             </div>
           )}
@@ -304,38 +292,16 @@ export default function ModuleList() {
             
             {/* Horizontal Input Action Form Stripe */}
             <div style={{ border: '1px solid #e0e0e0', borderBottom: 'none', background: '#fff', alignItems: 'center', minHeight: '48px', display: 'flex' }}>
-              <div 
-                onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-                style={{ display: 'flex', alignItems: 'center', padding: '0 1rem', borderRight: '1px solid #e0e0e0', height: '48px', cursor: 'pointer', background: isFilterPanelOpen ? '#f4f4f4' : 'transparent' }}
-              >
+              <div onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)} style={{ display: 'flex', alignItems: 'center', padding: '0 1rem', borderRight: '1px solid #e0e0e0', height: '48px', cursor: 'pointer', background: isFilterPanelOpen ? '#f4f4f4' : 'transparent' }}>
                 <Filter size={16} />
               </div>
               <div style={{ width: '160px', borderRight: '1px solid #e0e0e0' }}>
-                <Dropdown
-                  id="program-dropdown"
-                  label={selectedProgram}
-                  items={['All Programs', 'Mind Matters', 'Mind Matters Jr.']}
-                  onChange={({ selectedItem }) => setSelectedProgram(selectedItem)}
-                  style={{ border: 'none', background: 'transparent' }}
-                />
+                <Dropdown id="program-dropdown" label={selectedProgram} items={['All Programs', 'Mind Matters', 'Mind Matters Jr.']} onChange={({ selectedItem }) => setSelectedProgram(selectedItem)} style={{ border: 'none', background: 'transparent' }} />
               </div>
               <div style={{ flexGrow: 1 }}>
-                <Search
-                  id="module-search"
-                  labelText="Search"
-                  placeholder="Find module by name, author or category"
-                  size="md"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ border: 'none', background: 'transparent' }}
-                />
+                <Search id="module-search" labelText="Search" placeholder="Find module by name, author or category" size="md" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ border: 'none', background: 'transparent' }} />
               </div>
-              <div 
-                onClick={fetchModules}
-                style={{ display: 'flex', alignItems: 'center', padding: '0 1rem', height: '48px', cursor: 'pointer', borderLeft: '1px solid #e0e0e0' }}
-              >
-                <Renew size={16} />
-              </div>
+              <div onClick={fetchModules} style={{ display: 'flex', alignItems: 'center', padding: '0 1rem', height: '48px', cursor: 'pointer', borderLeft: '1px solid #e0e0e0' }}><Renew size={16} /></div>
             </div>
 
             {/* Core Segment Layout Table */}
@@ -353,84 +319,63 @@ export default function ModuleList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredModules.length === 0 ? (
-                    <tr style={{ height: '48px' }}>
-                      <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: '#525252', background: '#fff' }}>
-                        No modules found matching your active filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredModules.map((row) => (
-                      <React.Fragment key={row.id}>
-                        {/* Parent Default Table Data Row */}
-                        <tr style={{ borderBottom: '1px solid #e0e0e0', height: '48px', background: expandedRowId === row.id ? '#f4f4f4' : '#fff' }}>
-                          <td style={{ paddingLeft: '1rem', verticalAlign: 'middle', width: '40px' }}>
-                            {expandedRowId === row.id ? (
-                              <ChevronDown size={16} style={{ cursor: 'pointer', color: '#161616' }} onClick={() => toggleRowExpand(row.id)} />
+                  {filteredModules.map((row) => (
+                    <React.Fragment key={row.id}>
+                      <tr style={{ borderBottom: '1px solid #e0e0e0', height: '48px', background: expandedRowId === row.id ? '#f4f4f4' : '#fff' }}>
+                        <td style={{ paddingLeft: '1rem', verticalAlign: 'middle', width: '40px' }}>
+                          {expandedRowId === row.id ? (
+                            <ChevronDown size={16} style={{ cursor: 'pointer', color: '#161616' }} onClick={() => toggleRowExpand(row.id)} />
+                          ) : (
+                            <ChevronRight size={16} style={{ cursor: 'pointer', color: '#525252' }} onClick={() => toggleRowExpand(row.id)} />
+                          )}
+                        </td>
+                        <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle' }}>
+                          <a href="#" onClick={(e) => { e.preventDefault(); openInspectionDrawer(row); }} style={{ color: '#0f62fe', textDecoration: 'underline', fontWeight: 400 }}>
+                            {row.name}
+                          </a>
+                        </td>
+                        <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle', color: '#161616' }}>{row.author}</td>
+                        <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle', color: '#161616' }}>{row.serviceComponent}</td>
+                        <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle', color: '#161616' }}>{row.program}</td>
+                        <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            {row.status.toLowerCase() === 'active' || row.status.toLowerCase() === 'approved' ? (
+                              <><CheckmarkFilled size={16} style={{ color: '#24a148' }} /><span style={{ color: '#161616' }}>Active</span></>
                             ) : (
-                              <ChevronRight size={16} style={{ cursor: 'pointer', color: '#525252' }} onClick={() => toggleRowExpand(row.id)} />
+                              <><div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#6f6f6f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: '6px', height: '2px', background: '#fff' }}></div></div><span style={{ color: '#161616' }}>Draft</span></>
                             )}
-                          </td>
-                          <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle' }}>
-                            <a 
-                              href="#" 
-                              onClick={(e) => { e.preventDefault(); openInspectionDrawer(row); }}
-                              style={{ color: '#0f62fe', textDecoration: 'underline', fontWeight: 400 }}
-                            >
-                              {row.name}
-                            </a>
-                          </td>
-                          <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle', color: '#161616' }}>{row.author}</td>
-                          <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle', color: '#161616' }}>{row.serviceComponent}</td>
-                          <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle', color: '#161616' }}>{row.program}</td>
-                          <td style={{ padding: '0.5rem 1rem', verticalAlign: 'middle' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                              {row.status.toLowerCase() === 'active' || row.status.toLowerCase() === 'approved' ? (
-                                <>
-                                  <CheckmarkFilled size={16} style={{ color: '#24a148' }} />
-                                  <span style={{ color: '#161616' }}>Active</span>
-                                </>
-                              ) : (
-                                <>
-                                  <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#6f6f6f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <div style={{ width: '6px', height: '2px', background: '#fff' }}></div>
-                                  </div>
-                                  <span style={{ color: '#161616' }}>Draft</span>
-                                </>
-                              )}
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'center', verticalAlign: 'middle', color: '#525252' }}>
+                          <OverflowMenuVertical size={16} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(row)} />
+                        </td>
+                      </tr>
+
+                      {/* Expandable Inner Sub-Row Nested Detail Section Block */}
+                      {expandedRowId === row.id && (
+                        <tr style={{ background: '#f4f4f4', borderBottom: '1px solid #e0e0e0' }}>
+                          <td></td>
+                          <td colSpan="6" style={{ padding: '1rem 1.5rem', fontSize: '0.875rem' }}>
+                            <div style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start' }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#525252', fontWeight: 600 }}>
+                                  Generated Summary <span style={{ background: '#e0e0e0', color: '#161616', fontSize: '0.65rem', padding: '1px 4px', borderRadius: '2px', display: 'inline-flex', alignItems: 'center', fontWeight: 'bold' }}>✦ AI</span>
+                                </div>
+                                <p style={{ color: '#161616', margin: 0, lineHeight: '1.4' }}>{row.generatedSummary}</p>
+                              </div>
+                              <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                <div><span style={{ color: '#525252', display: 'inline-block', width: '100px' }}>Category</span><span style={{ color: '#161616', fontWeight: 500 }}>{row.category}</span></div>
+                                <div><span style={{ color: '#525252', display: 'inline-block', width: '100px' }}>Target Group</span><span style={{ color: '#161616', fontWeight: 500 }}>{row.targetGroup}</span></div>
+                              </div>
+                              <div style={{ alignSelf: 'center' }}>
+                                <span style={{ background: '#d0e1fd', color: '#0043ce', padding: '0.35rem 0.75rem', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 500 }}>Maharishi Chetpat</span>
+                              </div>
                             </div>
                           </td>
-                          <td style={{ textAlign: 'center', verticalAlign: 'middle', color: '#525252' }}>
-                            <OverflowMenuVertical size={16} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(row)} />
-                          </td>
                         </tr>
-
-                        {/* Expandable Inner Sub-Row Nested Detail Section Block */}
-                        {expandedRowId === row.id && (
-                          <tr style={{ background: '#f4f4f4', borderBottom: '1px solid #e0e0e0' }}>
-                            <td></td>
-                            <td colSpan="6" style={{ padding: '1rem 1.5rem', fontSize: '0.875rem' }}>
-                              <div style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start' }}>
-                                <div style={{ flex: 1 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#525252', fontWeight: 600 }}>
-                                    Generated Summary <span style={{ background: '#e0e0e0', color: '#161616', fontSize: '0.65rem', padding: '1px 4px', borderRadius: '2px', display: 'inline-flex', alignItems: 'center', fontWeight: 'bold' }}>✦ AI</span>
-                                  </div>
-                                  <p style={{ color: '#161616', margin: 0, lineHeight: '1.4' }}>{row.generatedSummary}</p>
-                                </div>
-                                <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                  <div><span style={{ color: '#525252', display: 'inline-block', width: '100px' }}>Category</span><span style={{ color: '#161616', fontWeight: 500 }}>{row.category}</span></div>
-                                  <div><span style={{ color: '#525252', display: 'inline-block', width: '100px' }}>Target Group</span><span style={{ color: '#161616', fontWeight: 500 }}>{row.targetGroup}</span></div>
-                                </div>
-                                <div style={{ alignSelf: 'center' }}>
-                                  <span style={{ background: '#d0e1fd', color: '#0043ce', padding: '0.35rem 0.75rem', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 500 }}>Maharishi Chetpat</span>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    ))
-                  )}
+                      )}
+                    </React.Fragment>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -443,17 +388,12 @@ export default function ModuleList() {
       {/* 7. SLIDING RIGHT SIDE CONTEXT INSPECTOR DRAWER SYSTEM */}
       {selectedDrawerModule && (
         <div style={{ position: 'fixed', top: '3rem', right: 0, width: '380px', height: 'calc(100vh - 3rem)', background: '#fff', borderLeft: '1px solid #e0e0e0', boxShadow: '-2px 0 8px rgba(0,0,0,0.05)', zIndex: 8000, display: 'flex', flexDirection: 'column' }}>
-          
-          {/* Drawer Top Toolbar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1rem', borderBottom: '1px solid #e0e0e0' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 400, color: '#161616', margin: 0 }}>{selectedDrawerModule.name}</h2>
             <Close size={20} style={{ cursor: 'pointer', color: '#525252' }} onClick={() => setSelectedDrawerModule(null)} />
           </div>
 
-          {/* Drawer Scroller Body Box */}
           <div style={{ flexGrow: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            
-            {/* Top Summary Header Section */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#161616', margin: 0 }}>Summary</h3>
@@ -462,7 +402,6 @@ export default function ModuleList() {
               <p style={{ fontSize: '0.875rem', color: '#161616', lineHeight: '1.5', margin: 0 }}>{selectedDrawerModule.summary}</p>
             </div>
 
-            {/* Nested Configuration Accordions */}
             <Accordion align="start" style={{ width: '100%', borderTop: '1px solid #e0e0e0' }}>
               <AccordionItem title="Module" style={{ fontSize: '0.875rem', borderBottom: '1px solid #e0e0e0' }}>
                 <div style={{ padding: '0.5rem 0', color: '#525252' }}>Core technical variable frameworks...</div>
@@ -476,7 +415,6 @@ export default function ModuleList() {
               </AccordionItem>
             </Accordion>
 
-            {/* Snapshot Metadata Block */}
             <div style={{ marginTop: 'auto', borderTop: '1px solid #e0e0e0', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem' }}>
               <h4 style={{ fontSize: '1rem', fontWeight: 600, color: '#161616', margin: '0 0 0.25rem 0' }}>Overview</h4>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#525252' }}>Publish Date</span><span style={{ color: '#161616' }}>{selectedDrawerModule.date}</span></div>
@@ -491,14 +429,8 @@ export default function ModuleList() {
             </div>
           </div>
 
-          {/* Bottom Fixed Action Sidebar Footer options */}
           <div style={{ padding: '1rem', borderTop: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: '#fff' }}>
-            <Button 
-              kind="primary" 
-              renderIcon={Launch} 
-              onClick={() => handleRowClick(selectedDrawerModule)}
-              style={{ width: '100%', justifyContent: 'space-between' }}
-            >
+            <Button kind="primary" renderIcon={Launch} onClick={() => handleRowClick(selectedDrawerModule)} style={{ width: '100%', justifyContent: 'space-between' }}>
               Open Module Editor
             </Button>
             <button style={{ width: '100%', background: 'none', border: 'none', color: '#0f62fe', textDecoration: 'underline', fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', padding: '4px 0' }}>
