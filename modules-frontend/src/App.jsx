@@ -6,6 +6,7 @@ import Welcome from './pages/Welcome';
 import LoginView from './pages/Login';
 import ModuleList from './pages/ModuleList';
 import ModuleForm from './pages/ModuleForm';
+import ReviewQueue from './pages/ReviewQueue'; // <-- Added import for your new page
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -26,6 +27,12 @@ export default function App() {
             <Route path="/dashboard" element={<ProtectedRoute><ModuleList /></ProtectedRoute>} />
             <Route path="/create" element={<ProtectedRoute><ModuleForm /></ProtectedRoute>} />
             <Route path="/edit/:id" element={<ProtectedRoute><ModuleForm /></ProtectedRoute>} />
+            
+            {/* NEW: Review Queue Workflow pipeline endpoint */}
+            <Route path="/review-queue" element={<ProtectedRoute><ReviewQueue /></ProtectedRoute>} />
+
+            {/* Fallback Catch-All Route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>
       </BrowserRouter>
